@@ -1,0 +1,1 @@
+# foot-stats-scraper
