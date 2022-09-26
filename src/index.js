@@ -72,20 +72,30 @@ let fulltimeCornersAgainst = "a#fusion-tab-fulltimecornersa";
 let fulltimeCornersFor = "a#fusion-tab-fulltimecornersf";
 let fulltimeMatchCorners = "a#fusion-tab-fulltimematchcorners";
 
+async function getIframeUrl(
+  page,
+  selector = 'div[aria-labelledby="fusion-tab-fulltimecornersf"] > div > iframe'
+) {
+  const iframeUrl = await page.$eval(selector, (el) => el.getAttribute("src"));
+  return iframeUrl;
+}
+
 async function fetchCornersFor(urlPage) {
   // const url = "https://www.thestatsdontlie.com/football/n-s-america/argentina/primera-nacional/corners";
   const url =
     "https://www.thestatsdontlie.com/football/n-s-america/brazil/serie-a/corners/";
   const page = await getPage(url);
-  const tableUrl = await page.$eval(
-    'div[aria-labelledby="fusion-tab-fulltimecornersf"] > div > iframe',
-    (el) => el.getAttribute("src")
-  );
+  // const iframeUrl = await page.$eval(
+  //   'div[aria-labelledby="fusion-tab-fulltimecornersf"] > div > iframe',
+  //   (el) => el.getAttribute("src")
+  // );
 
-  const pageTable = await getPage(tableUrl);
+  const iframeUrl = await getIframeUrl(page);
+
+  const iframeWithStatsTable = await getPage(iframeUrl);
 
   // seleciona linhas da tabela, removendo linhas 1 e 2 de cabeçalhos e a última linha que contém lixo
-  const values = await pageTable.$$eval(
+  const values = await iframeWithStatsTable.$$eval(
     "table tbody tr:nth-child(n+3):not(:last-child)",
     (node) =>
       node.map((rows) => {
@@ -114,8 +124,8 @@ async function fetchCornersFor(urlPage) {
       })
   );
 
-  console.log(values);
-  await pageTable.close();
+  console.log(values, "\n\n\nEnd...");
+  await iframeWithStatsTable.close();
 }
 
 fetchCornersFor();
